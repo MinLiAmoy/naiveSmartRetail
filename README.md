@@ -153,3 +153,24 @@ Logic based on Computer Vision Version 2:
 version 2 is done. may exist few bugs
 good idea from wanggang:
 	***we can resize/compress the image and do the segm/diff function. let's have a shot!
+
+***cv_logic Version3
+wanggang's idea:
+	the problem is that the motion PULL and PUSH are triggered by different methods, but not by a unified logic. This may result in the chaos. For example,/
+	when the system didn't recognize the PUSH motion, it will trigger 2 PULL motion in sequence.
+	also, wanggang tested cv_logic_v0 on another testing video. when upper level of objects are shaked, the fgsegm method will detect this motion blob, even/
+	the hand is outside the closet.
+	
+	***solution:
+	like infrared ray detection.
+	we only consider the middle region, like(4*480). we take a specific frame as background. when a new frame comes in, we just select same 4*480 region/
+	and do the substracion like foreground segmentation.
+	after binarization, we can sum up all the light pixels. when the sum is bigger than a threshold, we can conclude that the state is hand_in.
+
+2.1
+training log:
+	dataset 12_2
+		the initial checkpoint is false!!!
+	started training again
+wrote all the documents needed for training. My job is done.
+		
