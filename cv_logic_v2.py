@@ -54,7 +54,7 @@ obj_push = 0
 obj_pull = 0
 # flag and count number when motion PULL triggered
 cnt_pull = 0
-cnt_pull_max = 5
+cnt_pull_max = 3
 pull_flag = False
 
 
@@ -73,8 +73,8 @@ b = ymax_region - (ymax_region - ymin_region)/(xmax_region - xmin_region)*xmax_r
 # whether to write the video for analysis
 Write_Video = True
 
-cap = cv.VideoCapture("left_up.mp4")
-wrt = cv.VideoWriter('left_up_detection.mp4', cv.VideoWriter_fourcc(*'XVID'), 25, (inWidth, inHeight))
+cap = cv.VideoCapture("left_up_max.avi")
+wrt = cv.VideoWriter('left_up_detection_max.mp4', cv.VideoWriter_fourcc(*'XVID'), 25, (inWidth, inHeight))
 
 
 
@@ -296,7 +296,7 @@ def segm_dnn_pairing(detections_result, coor_segm, thr_dist):
         for i in range(len(detections_result) / 5):
             coor_ssd = detections_result[5*i+1:5*i+5]
             dist = compute_dist(coor_ssd, coor_segm)
-            if dist < min_dist and dist < thr_dist:
+            if dist < min_dist and dist < thr_dist and (coor_ssd[0] > 270): # should also in right-region, need to be modified
                 paired_flag = True
                 min_dist = dist
                 paired_obj = (detections_result[5*i:5*i+5])
@@ -313,8 +313,12 @@ def obj_decision(obj_list):
     To do:
         if multi objs have same count, we just pick the smaller idx, need to be modified
         I am worried about the backg will occupy the list
+        ***modification: once a bbox is detected in these 5 frames, we ignore the background
     '''
-    return obj_list.index(max(obj_list))
+    if obj_list[0] == 5:
+        return 0
+    else:
+        return obj_list[1:].index(max(obj_list[1:])) + 1
 
 
 
@@ -389,7 +393,7 @@ while (ret):
             cv.rectangle(frame, (xLeftBottom, yLeftBottom), (xRightTop, yRightTop),
                           (0, 255, 0), 3)
             label = classNames[paired_obj[0]]   # + ": " + str(confidence)
-            print('paired, the object is: ' + label)
+            # print('paired, the object is: ' + label)
             labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
 
             yLeftBottom = max(yLeftBottom, labelSize[1])
